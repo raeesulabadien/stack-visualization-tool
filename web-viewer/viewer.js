@@ -96,26 +96,43 @@ class StackVisualizer {
         for (const line of lines) {
             if (!line.trim()) continue;
 
-            // Parse CSV: OPERATION,VALUE,ESP=address,EBP=address
-            const parts = line.split(',');
-            if (parts.length < 4) continue;
+            // Parse CSV: OPERATION,VALUE,ESP=address,EBP=address,SNAPSHOT=[val1,val2,...]
+            // Handle both old format (without SNAPSHOT) and new format (with SNAPSHOT)
+            try {
+                const parts = line.split(',');
+                const operation = {
+                    operation: parts[0].trim(),
+                    value: parts[1].trim(),
+                    esp: null,
+                    ebp: null,
+                    snapshot: []
+                };
 
-            const operation = parts[0].trim();
-            const value = parts[1].trim();
-            const espPart = parts[2].trim();
-            const ebpPart = parts[3].trim();
+                for (let part of parts) {
+                    if (part.startsWith('ESP=')) {
+                        operation.esp = part.split('=')[1];
+                    } else if (part.startsWith('EBP=')) {
+                        operation.ebp = part.split('=')[1];
+                    } else if (part.startsWith('SNAPSHOT=')) {
+                        const snapshotStr = line.substring(line.indexOf('SNAPSHOT=') + 9);
+                        const snapshotMatch = snapshotStr.match(/\[(.*?)\]/);
+                        if (snapshotMatch && snapshotMatch[1].trim() !== '') {
+                            const values = snapshotMatch[1].split(',');
+                            operation.snapshot = values.map(v => v.trim());
+                        }
+                    }
+                }
 
-            // Extract ESP and EBP values
-            const espMatch = espPart.match(/ESP=(.+)/);
-            const ebpMatch = ebpPart.match(/EBP=(.+)/);
+                // If no snapshot, create simple one from operation (backward compatibility)
+                if (operation.snapshot.length === 0 && operation.value) {
+                    operation.snapshot = [operation.value];
+                }
 
-            if (espMatch && ebpMatch) {
-                this.operations.push({
-                    operation,
-                    value,
-                    esp: espMatch[1],
-                    ebp: ebpMatch[1]
-                });
+                if (operation.esp && operation.ebp) {
+                    this.operations.push(operation);
+                }
+            } catch (error) {
+                console.error('Error parsing line:', line, error);
             }
         }
 

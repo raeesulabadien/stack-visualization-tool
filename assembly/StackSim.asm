@@ -43,7 +43,7 @@ INCLUDE Logger.asm
     msgStackEmpty BYTE "ERROR: Stack Underflow!", 0Dh, 0Ah, 0
     msgEnterN BYTE "Enter N (for Fibonacci/Factorial): ", 0
     msgResult BYTE "Result: ", 0
-    logFileName BYTE "output/stacklog.txt", 0
+    logFileName BYTE "stacklog.txt", 0
     
 .code
 main PROC

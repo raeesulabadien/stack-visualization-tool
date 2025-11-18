@@ -2,6 +2,33 @@
 
 A comprehensive educational tool for visualizing x86 assembly stack operations in real-time. This project combines low-level Assembly programming (MASM + Irvine32) with modern web technologies to provide an interactive learning experience for understanding stack frames, function calls, and memory management.
 
+## 🚀 Quick Start (5 Minutes)
+
+### Step 1: Build a Simple Example
+```batch
+cd assembly
+ml /c /coff Programs\SimplePush.asm
+link /SUBSYSTEM:CONSOLE Programs\SimplePush.obj Irvine32.lib kernel32.lib
+```
+
+### Step 2: Run It
+```batch
+Programs\SimplePush.exe
+```
+This creates `stacklog.txt` in the assembly folder.
+
+### Step 3: Visualize
+1. Open `web-viewer/index.html` in your browser
+2. Click "Choose File" and select `assembly/stacklog.txt`
+3. Click "Play" to see the stack animation!
+
+### Example Output Format
+```
+PUSH,0x00000064,ESP=0x0012FF7C,EBP=0x0012FF80,SNAPSHOT=[0x00000064]
+PUSH,0x000000C8,ESP=0x0012FF78,EBP=0x0012FF80,SNAPSHOT=[0x000000C8,0x00000064]
+POP,0x000000C8,ESP=0x0012FF7C,EBP=0x0012FF80,SNAPSHOT=[0x00000064]
+```
+
 ## 🎯 Features
 
 - **Stack Simulator**: Complete x86-compatible stack implementation in Assembly

@@ -26,11 +26,17 @@
     hexDigits BYTE "0123456789ABCDEF", 0
     
     ; Log file name (can be overridden)
-    logFilePath BYTE "output/stacklog.txt", 0
+    logFilePath BYTE "stacklog.txt", 0
     
     ; Error messages
-    logErrorCreate BYTE "Error creating log file", 0Dh, 0Ah, 0
+    logErrorCreate BYTE "ERROR: Could not create log file", 0Dh, 0Ah, 0
     logErrorWrite BYTE "Error writing to log file", 0Dh, 0Ah, 0
+    logSuccess BYTE "Log file created: stacklog.txt", 0Dh, 0Ah, 0
+    
+    ; SNAPSHOT format strings
+    logSnapshotStart BYTE ",SNAPSHOT=[", 0
+    logSnapshotEnd BYTE "]", 0
+    logSnapshotSep BYTE ",", 0
 
 .code
 
@@ -52,6 +58,10 @@ InitLogger PROC
     je InitError
     
     mov logFileHandle, eax
+    
+    ; Display success message
+    mov edx, OFFSET logSuccess
+    call WriteString
     jmp InitDone
     
 InitError:
@@ -122,6 +132,9 @@ LogPush PROC
     mov eax, SimEBP
     call AppendHex
     
+    ; Add snapshot
+    call AppendSnapshot
+    
     ; Add newline
     mov edi, OFFSET logNewline
     call AppendString
@@ -179,6 +192,9 @@ LogPop PROC
     ; Add EBP value
     mov eax, SimEBP
     call AppendHex
+    
+    ; Add snapshot
+    call AppendSnapshot
     
     ; Add newline
     mov edi, OFFSET logNewline
@@ -238,6 +254,9 @@ LogCall PROC
     mov eax, SimEBP
     call AppendHex
     
+    ; Add snapshot
+    call AppendSnapshot
+    
     ; Add newline
     mov edi, OFFSET logNewline
     call AppendString
@@ -296,6 +315,9 @@ LogRet PROC
     mov eax, SimEBP
     call AppendHex
     
+    ; Add snapshot
+    call AppendSnapshot
+    
     ; Add newline
     mov edi, OFFSET logNewline
     call AppendString
@@ -349,6 +371,9 @@ LogNewFrame PROC
     mov eax, SimEBP
     call AppendHex
     
+    ; Add snapshot
+    call AppendSnapshot
+    
     ; Add newline
     mov edi, OFFSET logNewline
     call AppendString
@@ -400,6 +425,9 @@ LogEndFrame PROC
     ; Add EBP value
     mov eax, SimEBP
     call AppendHex
+    
+    ; Add snapshot
+    call AppendSnapshot
     
     ; Add newline
     mov edi, OFFSET logNewline
@@ -530,3 +558,63 @@ CountDone:
     pop eax
     ret
 WriteLogBuffer ENDP
+
+;------------------------------------------------------------
+; AppendSnapshot - Append current stack contents to log buffer
+; Receives: ESI = current buffer position
+; Returns: ESI = new buffer position
+; Format: SNAPSHOT=[val1,val2,...]
+;------------------------------------------------------------
+AppendSnapshot PROC
+    push eax
+    push ebx
+    push ecx
+    push edx
+    push edi
+    
+    ; Add ",SNAPSHOT=["
+    mov edi, OFFSET logSnapshotStart
+    call AppendString
+    
+    ; Get stack pointer from SimStack
+    ; We'll read up to 10 values from the stack starting at SimESP
+    mov ebx, SimESP  ; Current ESP
+    mov ecx, 10       ; Max 10 values
+    xor edx, edx      ; Counter for actual values added
+    
+SnapshotLoop:
+    ; Check if we're within stack bounds
+    cmp ebx, StackTop
+    jge SnapshotDone  ; Reached top of stack
+    
+    ; Add comma separator if not first value
+    cmp edx, 0
+    je SkipComma
+    push edi
+    mov edi, OFFSET logSnapshotSep
+    call AppendString
+    pop edi
+    
+SkipComma:
+    ; Read value from stack
+    mov eax, [ebx]
+    call AppendHex
+    
+    ; Move to next stack position
+    add ebx, 4
+    inc edx
+    dec ecx
+    jnz SnapshotLoop
+    
+SnapshotDone:
+    ; Add "]"
+    mov edi, OFFSET logSnapshotEnd
+    call AppendString
+    
+    pop edi
+    pop edx
+    pop ecx
+    pop ebx
+    pop eax
+    ret
+AppendSnapshot ENDP
