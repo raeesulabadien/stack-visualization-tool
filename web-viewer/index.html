@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack Visualization Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🎯 Stack Visualization Tool</h1>
+        <p class="subtitle">Interactive x86 Assembly Stack Animator</p>
+    </header>
+
+    <main>
+        <section class="controls-panel">
+            <div class="file-controls">
+                <h2>Load Log File</h2>
+                <input type="file" id="fileInput" accept=".txt,.log,.csv">
+                <button id="loadBtn" disabled>Load File</button>
+                <span id="fileInfo" class="info-text"></span>
+            </div>
+
+            <div class="playback-controls">
+                <h2>Playback Controls</h2>
+                <div class="button-group">
+                    <button id="firstBtn" disabled title="First operation">⏮️ First</button>
+                    <button id="prevBtn" disabled title="Previous operation">⏪ Prev</button>
+                    <button id="playBtn" disabled title="Auto-play">▶️ Play</button>
+                    <button id="pauseBtn" disabled style="display:none;" title="Pause">⏸️ Pause</button>
+                    <button id="nextBtn" disabled title="Next operation">⏩ Next</button>
+                    <button id="lastBtn" disabled title="Last operation">⏭️ Last</button>
+                </div>
+                <div class="speed-control">
+                    <label for="speedSlider">Speed:</label>
+                    <input type="range" id="speedSlider" min="100" max="2000" value="500" step="100">
+                    <span id="speedValue">500ms</span>
+                </div>
+            </div>
+
+            <div class="status-panel">
+                <h2>Status</h2>
+                <div class="status-info">
+                    <div class="status-item">
+                        <span class="label">Operation:</span>
+                        <span id="currentOp" class="value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Step:</span>
+                        <span id="stepInfo" class="value">0 / 0</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">ESP:</span>
+                        <span id="espValue" class="value">-</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">EBP:</span>
+                        <span id="ebpValue" class="value">-</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="visualization-panel">
+            <h2>Stack Visualization</h2>
+            <div class="stack-container">
+                <div class="pointer-column">
+                    <div id="espPointer" class="pointer esp-pointer" style="display:none;">
+                        <img src="assets/esp-arrow.svg" alt="ESP" class="pointer-arrow">
+                        <span class="pointer-label">ESP</span>
+                    </div>
+                    <div id="ebpPointer" class="pointer ebp-pointer" style="display:none;">
+                        <img src="assets/ebp-arrow.svg" alt="EBP" class="pointer-arrow">
+                        <span class="pointer-label">EBP</span>
+                    </div>
+                </div>
+                <div class="stack-display" id="stackDisplay">
+                    <div class="empty-state">
+                        <p>📂 Load a log file to begin visualization</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="operation-log">
+            <h2>Operation Log</h2>
+            <div id="operationLog" class="log-container">
+                <p class="empty-state">No operations loaded</p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Stack Visualization Tool | Educational Assembly Stack Simulator</p>
+    </footer>
+
+    <script src="viewer.js"></script>
+</body>
+</html>
